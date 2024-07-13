@@ -15,9 +15,14 @@ class VotingServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(
+            path: __DIR__.'/../config/voting.php',
+            key: 'voting'
+        );
+
         $this->app->bind(
-            FindRetrosService::class,
-            fn () => new FindRetrosService
+            abstract: FindRetrosService::class,
+            concrete: fn () => new FindRetrosService
         );
 
         $this->app['router']
