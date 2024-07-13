@@ -2,32 +2,28 @@
 
 namespace Atom\Voting;
 
+use Atom\Voting\Http\Middleware\VotingMiddleware;
 use Atom\Voting\Services\FindRetrosService;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class VotingServiceProvider extends PackageServiceProvider
+class VotingServiceProvider extends ServiceProvider
 {
     /**
-     * Register services.
+     * Register any application services.
+     *
+     * @return void
      */
-    public function configurePackage(Package $package): void
+    public function register()
     {
-        $package
-            ->name('voting')
-            ->hasConfigFile();
-    }
-
-    /**
-     * Bootstrap services.
-     */
-    public function register(): void
-    {
-        parent::register();
-
         $this->app->bind(
             FindRetrosService::class,
             fn () => new FindRetrosService
         );
+
+        $this->app['router']
+            ->aliasMiddleware(
+                name: 'voting.check',
+                class: VotingMiddleware::class,
+            );
     }
 }
