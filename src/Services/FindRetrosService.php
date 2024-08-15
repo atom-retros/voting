@@ -35,7 +35,7 @@ class FindRetrosService
             return false;
         }
 
-        if ($request->ip() === '127.0.0.1') {
+        if ($request->getClientIp() === '127.0.0.1') {
             return true;
         }
 
@@ -52,7 +52,7 @@ class FindRetrosService
         }
 
         $response = $this->service
-            ->get(sprintf(config('voting.verify_url'), config('voting.username'), $request->ip()));
+            ->get(sprintf(config('voting.verify_url'), config('voting.username'), $request->getClientIp()));
 
         if (in_array($response->json(), ['1', '2'])) {
             Cache::put($cacheKey, true, now()->addMinutes(30));
