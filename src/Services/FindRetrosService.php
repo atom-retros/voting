@@ -2,9 +2,11 @@
 
 namespace Atom\Voting\Services;
 
-use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Support\Facades\Cache;
+use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Client\PendingRequest;
 
 class FindRetrosService
 {
@@ -25,15 +27,14 @@ class FindRetrosService
     /**
      * Verify the user's vote.
      */
-    public function voted(): bool
+    public function voted(Request $request, Closure $next): bool
     {
-        $request = app('request');
-
         $cacheKey = sprintf(config('voting.cache_key'), $request->ip());
 
         if (! config('voting.enabled', false)) {
             return false;
         }
+
 
         if ($request->getClientIp() === '127.0.0.1') {
             return true;
@@ -51,6 +52,11 @@ class FindRetrosService
             return true;
         }
 
+        if ($this->isRedirectLoop($request, $next)) {
+            Cache::put($cacheKey, true, now()->addMinutes(30));
+            return true;
+        }
+
         $response = $this->service
             ->get(sprintf(config('voting.verify_url'), config('voting.username'), $request->getClientIp()));
 
@@ -59,6 +65,28 @@ class FindRetrosService
 
             return true;
         }
+
+        return false;
+    }
+
+    /**
+     * Check if the user is in a redirect loop.
+     */
+    public function isRedirectLoop(Request $request, Closure $next): bool
+    {
+        if (!str_contains($request->header('referer'), config('voting.url'))) {
+            return false;
+        }
+
+        $redirectKey = sprintf(config('voting.redirect_key'), $request->ip());
+
+        $redirect = Cache::get($redirectKey, 0);
+
+        if ($redirect >= 3) {
+            return true;
+        }
+
+        Cache::put($redirectKey, $redirect + 1, now()->addMinutes(5));
 
         return false;
     }

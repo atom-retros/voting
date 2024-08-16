@@ -20,7 +20,7 @@ class VotingMiddleware
             return $next($request);
         }
 
-        if (! $service->voted()) {
+        if (! $service->voted($request, $next)) {
             return redirect()->to($service->getRedirectUri());
         }
 
