@@ -74,7 +74,7 @@ class FindRetrosService
      */
     public function isRedirectLoop(Request $request, Closure $next): bool
     {
-        if (!str_contains($request->header('referer'), config('voting.url'))) {
+        if (!str_contains($request->header('referer'), 'findretros')) {
             return false;
         }
 
