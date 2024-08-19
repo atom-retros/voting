@@ -3,10 +3,10 @@
 namespace Atom\Voting\Services;
 
 use Closure;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class FindRetrosService
 {
@@ -35,7 +35,6 @@ class FindRetrosService
             return false;
         }
 
-
         if ($request->getClientIp() === '127.0.0.1') {
             return true;
         }
@@ -54,6 +53,7 @@ class FindRetrosService
 
         if ($this->isRedirectLoop($request, $next)) {
             Cache::put($cacheKey, true, now()->addMinutes(30));
+
             return true;
         }
 
@@ -74,7 +74,7 @@ class FindRetrosService
      */
     public function isRedirectLoop(Request $request, Closure $next): bool
     {
-        if (!str_contains($request->header('referer'), 'findretros')) {
+        if (! str_contains($request->header('referer'), 'findretros')) {
             return false;
         }
 
